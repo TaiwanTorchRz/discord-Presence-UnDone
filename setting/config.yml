@@ -1,0 +1,16 @@
+version: 0.1 #Ddon't touch 勿動
+debug: False
+client_id: 720534269927096370
+#You need to upload your image(s) here 你必須上傳你的相片到這裡
+#https://discordapp.com/developers/applications/<client_id>/rich-presence/assets
+
+large_image: 'laptop'
+large_text: 'Large Text Here!' #滑鼠游標移動上去時的顯示
+small_image: 'laptop'
+small_text: 'Small Text Here!' #滑鼠游標移動上去時的顯示
+
+state: 'TaiwanTorchRz'
+details: '工作中'
+
+name: <大標題是DC應用程式名稱>
+
