@@ -37,12 +37,12 @@ while True:
         if temp =="reload":
             reload()
         elif temp =="stop":
-            exit()
-            
-        elif temp == "help"or"?":
+            print('正在回收資源..請稍後')
+            quit(0)
+        elif temp == "help":
             print("---\n指令幫助:\nreload: 重新讀取設定檔案\nstop:關閉程式\nhelp:取得幫助\nv0.1(Beta)\n---")
         else:
-            print('未知的指令.請輸入help或?來取得幫助')
+            print('未知的指令.請輸入help來取得幫助')
     except Exception as e:
         print(e)
 
