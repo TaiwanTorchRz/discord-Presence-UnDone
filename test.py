@@ -6,9 +6,10 @@ cpu_per = round(psutil.cpu_percent(),1) # Get CPU Usage
 mem = psutil.virtual_memory()
 mem_per = round(psutil.virtual_memory().percent,1)
 ##################################################################################
-global RPC,config_list
+global RPC,config_list,command
+command = ""
 def reload():
-    global RPC,config_list
+    global RPC,config_list,command
     try:
         with open(r'.\setting\config.yml',encoding="utf-8") as file:
             config_list = yaml.full_load(file)
@@ -22,15 +23,29 @@ def reload():
         RPC.connect()
         print('連線成功')
         print('已就緒，請輸入help或?來取得幫助')
+        if str(str(config_list['debug']).lower()=="true"):print("\n"+str(e))
+        if config_list['large_image']['Enable'] == True:
+            command += str("large_image="+str(config_list['large_image']['text'])+",")
+        if config_list['large_text']['Enable'] == True:
+            command += str("large_text="+str(config_list['large_text']['text'])+",")
+        if config_list['small_text']['Enable'] == True:
+            command += str("small_text="+str(config_list['small_text']['text'])+",")
+        if config_list['details']['Enable'] == True:
+            command += str("details="+str(config_list['details']['text'])+",")
+        if config_list['state']['Enable'] == True:
+            command += str("state="+str(config_list['state']['text']))
+            print(command)
+            exit(0)
     except Exception as e:
         print('連線失敗')
-        if str(str(config_list['debug']).lower()=="true"):print("\n"+str(e))
+        
+
     
 reload()
     
 while True:
     try:  
-        RPC.update(large_image=str(config_list['large_image']), large_text=str(config_list['large_text']),small_image=str(config_list['small_image']), small_text=str(config_list['small_text']),details=str(config_list['details']), state=str(config_list['state']))
+        RPC.update(command)
         time.sleep(0.1)
         # if str(str(config_list['debug']).lower()=="true"):print("更新狀態")
         temp=str(input()).lower()
