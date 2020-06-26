@@ -2,7 +2,7 @@
 #See more details at github
 
 version: 0.2 #Ddon't touch 勿動
-debug: True
+debug: False
 client_id: 720534269927096370
 
 #You need to upload your image(s) here 你必須上傳你的相片到這裡

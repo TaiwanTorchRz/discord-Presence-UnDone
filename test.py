@@ -101,6 +101,8 @@ def update():
             if config_list['debug']==True:
                 print("[偵錯訊息] 更新遇到錯誤") 
                 print("[偵錯訊息] UPDATE="+str(UPDATE)+" update_timer="+str(update_timer))
+    UPDATE=False
+    return
         
 _update = threading.Thread(target = update)
 _update.setName('Thread-Update')
@@ -132,12 +134,19 @@ while 1:
             RPC.close()
             _update.join()     
             # print('正在回收資源..請稍後')
-            # quit(0)  
+            # quit(0) 
+            while _update.is_alive or UPDATE:
+                print('[系統消息] 等待結束更新線程')
+                time.sleep(1)
+            while _speedtest.is_alive:
+                print('[系統消息] 等待結束測速線程')
+                time.sleep(1)
+            
             exit()
             # raise SystemExit
         elif temp=="speed":
             if _speedtest.is_alive:
-                print("[系統消息] 已經在測速了")
+                print("[系統警告] 已經在測速了")
                 continue
             speedtestfun()
         # temp=str(input()).lower()
@@ -148,10 +157,11 @@ while 1:
             print("---\n指令幫助:\nreload: 重新讀取設定檔案\nstop:關閉程式\nspeed:顯示網速\nhelp:取得幫助\nv0.2(Beta)\n---")
         else:
             print('[系統消息] 未知的指令.請輸入help或?來取得幫助')
-    except Exception as e:
-       if config_list['debug']==True:print(e)
     except SystemExit:
         exit()
+    except Exception as e:
+       if config_list['debug']==True:print(e)
+    
 
 
 
