@@ -6,10 +6,10 @@ client_id: 720534269927096370
 
 large_image: 
   text: 'laptop'
-  Enable: true
+  Enable: False
 
 large_text: 
-  text: 'Large Text Here!' #滑鼠游標移動上去時的顯示
+  text: '  ' #滑鼠游標移動上去時的顯示
   Enable: True
 
 small_image: 
@@ -17,7 +17,7 @@ small_image:
   Enable: True
 
 small_text: 
-  text: 'Small Text Here!' #滑鼠游標移動上去時的顯示
+  text: '  ' #滑鼠游標移動上去時的顯示
   Enable: True
 
 state: 
@@ -28,5 +28,13 @@ details:
   text: '工作中'
   Enable: True
 
-name: <大標題是DC應用程式名稱>
+start:
+  int: 0
+  Enable: True
+
+end: 
+  int: 1
+  Enable: True
+
+name: <大標題是DC應用程式名稱> 
 
