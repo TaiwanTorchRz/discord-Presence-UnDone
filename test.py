@@ -3,82 +3,148 @@ from pypresence import Presence
 import time,os,yaml,threading
 # import psutil
 import speedtest
+from selenium import webdriver
 ##################################################################################
 # cpu_per = round(psutil.cpu_percent(),1) # Get CPU Usage
 # mem = psutil.virtual_memory()
 # mem_per = round(psutil.virtual_memory().percent,1)
 ##################################################################################
 global RPC,config_list,command,large_image,large_text,small_text,details,state
-
-
+global PING,DOWNLOAD,UPLOAD
+DOWNLOAD=None
+def speedtestfun():
+    global PING,DOWNLOAD,UPLOAD
+    print('[系統消息] 正在測試網路速度...')
+    s = speedtest.Speedtest()
+    print('[系統消息] 正在尋找最佳測速伺服器...')
+    s.get_best_server()
+    print('[系統消息] 正在測試下載速度...')
+    s.download()
+    print('[系統消息] 正在測試上傳速度...')
+    s.upload()
+    results_dict = s.results.dict()
+    PING=int(results_dict['ping'])
+    DOWNLOAD=int(results_dict['download']/1000000)
+    UPLOAD=int(results_dict['upload']/1000000)
+    if config_list['debug']==True:
+        print("[偵錯訊息]\n "+str(results_dict))    
+    print('PING: '+str(results_dict['ping'])+"ms\n下載速度: "+str(int(results_dict['download']/1000000))+" Mbps\n上傳速度: "+str(int(results_dict['upload']/1000000))+" Mbps")
+    print('系統消息] 測試完畢')
+_speedtest = threading.Thread(target=speedtestfun)
+_speedtest.setName('Thread-speedtest')
 def reload():
     global RPC,config_list,command,large_image,large_text,small_text,details,state
-
+    print('[系統消息] 讀取設定檔案')
     with open('.\setting\config.yml',encoding="utf-8",mode="r") as file:
         config_list = yaml.full_load(file)
-        print('成功讀取設定檔案，client_id= '+str(config_list['client_id']))
-    
-        # print('讀取設定檔案時出錯，正在建立新的')
+        print('[系統消息] 成功讀取設定檔案，client_id= '+str(config_list['client_id']))
     if config_list['debug']==True:
-        print("開啟除錯模式") 
+        print("[偵錯訊息] 開啟除錯模式") 
+    if config_list['debug']==True:print("[偵錯訊息] large_image="+str(config_list['large_image']['text'])+" 字串長度為"+str(len(str(config_list['large_image']['text']))))
+    if len(str(config_list['large_image']['text']))<2 and config_list['large_image']['Enable']==True: 
+        print('[系統警告] large_image 至少要2字元，少於2字元故不顯示')
+        config_list['large_image']['text']="  "
+    
+    if config_list['debug']==True:print("[偵錯訊息] small_image="+str(config_list['small_image']['text'])+" 字串長度為"+str(len(str(config_list['small_image']['text']))))    
+    if len(str(config_list['small_image']['text']))<2 and config_list['small_image']['Enable']==True:
+        print('[系統警告] small_image 至少要2字元，少於2字元故不顯示')
+        config_list['small_image']['text']="  "
+    
+    if config_list['debug']==True:print("[偵錯訊息] large_text="+str(config_list['large_text']['text'])+" 字串長度為"+str(len(str(config_list['large_text']['text']))))    
+    if len(str(config_list['large_text']['text']))<2 and config_list['large_text']['Enable'] == True:
+        print('[系統警告] large_text 至少要2字元，少於2字元故不顯示')
+        config_list['large_text']['text']="  "
+    
+    if config_list['debug']==True:print("[偵錯訊息] small_text="+str(config_list['small_text']['text'])+" 字串長度為"+str(len(str(config_list['small_text']['text']))))    
+    if len(str(config_list['small_text']['text']))<2 and config_list['small_text']['Enable']==True:
+        print('[系統警告] small_text 至少要2字元，少於2字元故不顯示')
+        config_list['small_text']['text']="  "
+    
+        
+        # print('讀取設定檔案時出錯，正在建立新的')
+    
     RPC = Presence(client_id=int(config_list['client_id']))
     try:
-        print('與Discord伺服器連線中...')
+        print('[系統消息] 與Discord伺服器連線中...')
         RPC.connect()
-        print('連線成功')
+        print('[系統消息] 連線成功')
+        if config_list['AutoChangeNameSetting']['Enable']:
+            if DOWNLOAD == None:
+                print('[系統消息] 啟用自動更改(DC應用程式)名稱，先進行網路測速')
+                _speedtest.start()
         # print('已就緒，請輸入help或?來取得幫助')
-        print('讀取設定檔案中的文字')
-        # if str(str(config_list['debug']).lower()=="true"):print("偵錯模式開啟\n"+str(e))
-        print('正在測試網路速度...')
-        s = speedtest.Speedtest()
-        print('正在尋找最佳測速伺服器...')
-        s.get_best_server()
-        print('正在測試下載速度...')
-        s.download()
-        print('正在測試上傳速度...')
-        s.upload()
-        print('測試完畢')
-        results_dict = s.results.dict()
-        if config_list['debug']==True:
-            print("[偵錯訊息]\n "+str(results_dict))    
-        print('PING: '+str(results_dict['ping'])+"ms\n下載速度: "+str(int(results_dict['download']/1000000))+" Mbps\n上傳速度: "+str(int(results_dict['upload']/1000000))+" Mbps")
-        print('初始化完畢')
+        print('[系統消息] 初始化完畢')
     except Exception as e:
-        print('連線失敗')
+        print('[系統消息] 連線失敗')
 reload()
+
+
+
+
 def update():
     global RPC,config_list
     while 1:
         # print('狀態更stop新')
-        time.sleep(0.5)
-        RPC.update(large_image=str(config_list['large_image']['text']) if config_list['large_image']['Enable'] else None, large_text=str(config_list['large_text']['text']) if config_list['large_text']['Enable'] else None,small_image=str(config_list['small_image']['text'] if config_list['small_image']['Enable'] else None), small_text=str(config_list['small_text']['text'] if config_list['small_text']['Enable'] else None),details=str(config_list['details']['text'] if config_list['details']['Enable'] else None), state=str(config_list['state']['text'] if config_list['state']['Enable'] else None))
+        time.sleep(5)
+        try:
+            RPC.update(large_image=str(config_list['large_image']['text']) if config_list['large_image']['Enable'] else '  ', large_text=str(config_list['large_text']['text']) if config_list['large_text']['Enable'] else '  ',small_image=str(config_list['small_image']['text'] if config_list['small_image']['Enable'] else '  '), small_text=str(config_list['small_text']['text'] if config_list['small_text']['Enable'] else '  '),details=str(config_list['details']['text'] if config_list['details']['Enable'] else '  '), state=str(config_list['state']['text'] if config_list['state']['Enable'] else '  '))
+            if config_list['debug']==True:
+                print("[偵錯訊息] 更新狀態，接受指令輸入") 
+        except:
+            # print('更新資料時出現錯誤，10秒後嘗試reload')
+            # time.sleep(10)
+            # reload()
+            if config_list['debug']==True:
+                print("[偵錯訊息] 更新遇到錯誤") 
+                
+            pass
+        
 _update = threading.Thread(target = update)
 _update.setName('Thread-Update')
 
 _update.start()
+if config_list['debug']==True:
+        print("[偵錯訊息] 開始更新") 
+
+def changename(name):
+    _path = '.\setting\msedgedriver.exe' # webdriver的位置
+    driver = webdriver.Edge(_path)
+    driver.get("https://freelancerlife.info/") #前往這個網址
+if config_list['AutoChangeNameSetting']['Enable'] == False:
+    _speedtest.start()
 while 1:
     try: 
         temp=str(input()).lower()
         if temp == "reload":
             RPC.clear()
-            # RPC.close()
+            RPC.close()
             
             reload()
+            print('[系統消息] 更新完畢，Discord需要幾秒鐘來更新')
         # temp=str(input()).lower()
-        if temp =="stop":
-            print('正在回收資源..請稍後')
+        elif temp =="stop":
+            print('[系統消息] 正在回收資源..請稍後')
             RPC.clear()
-            RPC.close()     
+            RPC.close()
+            _update.join()     
             # print('正在回收資源..請稍後')
-            quit(0)
+            # quit(0)
+            exit()
+        elif temp=="speed":
+            if _speedtest.is_alive:
+                print("[系統消息] 已經在測速了")
+                continue
+            speedtestfun()
         # temp=str(input()).lower()
-        if temp == "help" or "?":
-            print("---\n指令幫助:\nreload: 重新讀取設定檔案\nstop:關閉程式\nhelp:取得幫助\nv0.1(Beta)\n---")
+        elif temp.split(' ')[0]=="rename":
+            if config_list['AutoChangeNameSetting']['Enable']==False:print("")
+        elif temp == "help" or temp == "?":
+            print("---\n指令幫助:\nreload: 重新讀取設定檔案\nstop:關閉程式\nspeed:顯示網速\nhelp:取得幫助\nv0.2(Beta)\n---")
         else:
-            print('未知的指令.請輸入help來取得幫助')
+            print('系統消息] 未知的指令.請輸入help或?來取得幫助')
     except Exception as e:
        print(e)
-       print('ERR')
+
 
 
 
