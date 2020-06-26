@@ -9,7 +9,8 @@ import speedtest
 # mem_per = round(psutil.virtual_memory().percent,1)
 ##################################################################################
 global RPC,config_list,command,large_image,large_text,small_text,details,state
-command = ""
+
+
 def reload():
     global RPC,config_list,command,large_image,large_text,small_text,details,state
 
@@ -48,30 +49,30 @@ reload()
 def update():
     global RPC,config_list
     while 1:
+        # print('狀態更stop新')
         time.sleep(0.5)
         RPC.update(large_image=str(config_list['large_image']['text']) if config_list['large_image']['Enable'] else None, large_text=str(config_list['large_text']['text']) if config_list['large_text']['Enable'] else None,small_image=str(config_list['small_image']['text'] if config_list['small_image']['Enable'] else None), small_text=str(config_list['small_text']['text'] if config_list['small_text']['Enable'] else None),details=str(config_list['details']['text'] if config_list['details']['Enable'] else None), state=str(config_list['state']['text'] if config_list['state']['Enable'] else None))
+_update = threading.Thread(target = update)
+_update.setName('Thread-Update')
+
+_update.start()
 while 1:
     try: 
-        # RPC.update(command)
-        print('TEST')
-        # RPC.update(large_image=str(config_list['large_image']['text']) if config_list['large_image']['Enable'] else None, large_text=str(config_list['large_text']['text']) if config_list['large_text']['Enable'] else None,small_image=str(config_list['small_image']['text'] if config_list['small_image']['Enable'] else None), small_text=str(config_list['small_text']['text'] if config_list['small_text']['Enable'] else None),details=str(config_list['details']['text'] if config_list['details']['Enable'] else None), state=str(config_list['state']['text'] if config_list['state']['Enable'] else None))
-        # time.sleep(0.1)
-        # if str(str(config_list['debug']).lower()=="true"):print("更新狀態")
-        print('TEST2')
         temp=str(input()).lower()
         if temp == "reload":
-            RPC.close()
             RPC.clear()
+            # RPC.close()
+            
             reload()
         # temp=str(input()).lower()
         if temp =="stop":
             print('正在回收資源..請稍後')
-            RPC.close()
             RPC.clear()
+            RPC.close()     
             # print('正在回收資源..請稍後')
             quit(0)
         # temp=str(input()).lower()
-        if temp == "help":
+        if temp == "help" or "?":
             print("---\n指令幫助:\nreload: 重新讀取設定檔案\nstop:關閉程式\nhelp:取得幫助\nv0.1(Beta)\n---")
         else:
             print('未知的指令.請輸入help來取得幫助')
