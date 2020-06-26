@@ -15,7 +15,7 @@ large_image:
   Enable: True
 
 large_text: 
-  text: 'ㄓ' #滑鼠游標移動上去時的顯示
+  text: '是楊宸家的破貓' #滑鼠游標移動上去時的顯示
   Enable: True
 
 small_image: 

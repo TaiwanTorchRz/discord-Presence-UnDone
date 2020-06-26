@@ -9,9 +9,10 @@ from selenium import webdriver
 # mem = psutil.virtual_memory()
 # mem_per = round(psutil.virtual_memory().percent,1)
 ##################################################################################
-global RPC,config_list,command,large_image,large_text,small_text,details,state
+global RPC,config_list,command,large_image,large_text,small_text,details,state,update_timer
 global PING,DOWNLOAD,UPLOAD
 DOWNLOAD=None
+UPDATE = True
 def speedtestfun():
     global PING,DOWNLOAD,UPLOAD
     print('[系統消息] 正在測試網路速度...')
@@ -29,17 +30,19 @@ def speedtestfun():
     if config_list['debug']==True:
         print("[偵錯訊息]\n "+str(results_dict))    
     print('PING: '+str(results_dict['ping'])+"ms\n下載速度: "+str(int(results_dict['download']/1000000))+" Mbps\n上傳速度: "+str(int(results_dict['upload']/1000000))+" Mbps")
-    print('系統消息] 測試完畢')
+    print('[系統消息] 測試完畢')
 _speedtest = threading.Thread(target=speedtestfun)
 _speedtest.setName('Thread-speedtest')
 def reload():
-    global RPC,config_list,command,large_image,large_text,small_text,details,state
+    global RPC,config_list,command,large_image,large_text,small_text,details,state,UPDATE,update_timer
+    UPDATE = True
     print('[系統消息] 讀取設定檔案')
     with open('.\setting\config.yml',encoding="utf-8",mode="r") as file:
         config_list = yaml.full_load(file)
         print('[系統消息] 成功讀取設定檔案，client_id= '+str(config_list['client_id']))
     if config_list['debug']==True:
         print("[偵錯訊息] 開啟除錯模式") 
+    update_timer = int(config_list['update_timer'])
     if config_list['debug']==True:print("[偵錯訊息] large_image="+str(config_list['large_image']['text'])+" 字串長度為"+str(len(str(config_list['large_image']['text']))))
     if len(str(config_list['large_image']['text']))<2 and config_list['large_image']['Enable']==True: 
         print('[系統警告] large_image 至少要2字元，少於2字元故不顯示')
@@ -73,7 +76,7 @@ def reload():
                 print('[系統消息] 啟用自動更改(DC應用程式)名稱，先進行網路測速')
                 _speedtest.start()
         # print('已就緒，請輸入help或?來取得幫助')
-        print('[系統消息] 初始化完畢')
+        print('\n[系統消息] 初始化完畢')
     except Exception as e:
         print('[系統消息] 連線失敗')
 reload()
@@ -82,22 +85,22 @@ reload()
 
 
 def update():
-    global RPC,config_list
-    while 1:
+    global RPC,config_list,UPDATE,update_timer
+    while UPDATE:
         # print('狀態更stop新')
-        time.sleep(5)
+        time.sleep(update_timer)
         try:
             RPC.update(large_image=str(config_list['large_image']['text']) if config_list['large_image']['Enable'] else '  ', large_text=str(config_list['large_text']['text']) if config_list['large_text']['Enable'] else '  ',small_image=str(config_list['small_image']['text'] if config_list['small_image']['Enable'] else '  '), small_text=str(config_list['small_text']['text'] if config_list['small_text']['Enable'] else '  '),details=str(config_list['details']['text'] if config_list['details']['Enable'] else '  '), state=str(config_list['state']['text'] if config_list['state']['Enable'] else '  '))
             if config_list['debug']==True:
                 print("[偵錯訊息] 更新狀態，接受指令輸入") 
+                print("[偵錯訊息] UPDATE="+str(UPDATE)+" update_timer="+str(update_timer))
         except:
             # print('更新資料時出現錯誤，10秒後嘗試reload')
             # time.sleep(10)
             # reload()
             if config_list['debug']==True:
                 print("[偵錯訊息] 更新遇到錯誤") 
-                
-            pass
+                print("[偵錯訊息] UPDATE="+str(UPDATE)+" update_timer="+str(update_timer))
         
 _update = threading.Thread(target = update)
 _update.setName('Thread-Update')
@@ -109,7 +112,7 @@ if config_list['debug']==True:
 def changename(name):
     _path = '.\setting\msedgedriver.exe' # webdriver的位置
     driver = webdriver.Edge(_path)
-    driver.get("https://freelancerlife.info/") #前往這個網址
+    driver.get("https://discord.com/login?redirect_to=%2Fdevelopers") #前往這個網址
 if config_list['AutoChangeNameSetting']['Enable'] == False:
     _speedtest.start()
 while 1:
@@ -123,13 +126,15 @@ while 1:
             print('[系統消息] 更新完畢，Discord需要幾秒鐘來更新')
         # temp=str(input()).lower()
         elif temp =="stop":
-            print('[系統消息] 正在回收資源..請稍後')
+            UPDATE=False
+            print('[系統消息] 正在等待所有線程結束..請稍後')
             RPC.clear()
             RPC.close()
             _update.join()     
             # print('正在回收資源..請稍後')
-            # quit(0)
+            # quit(0)  
             exit()
+            # raise SystemExit
         elif temp=="speed":
             if _speedtest.is_alive:
                 print("[系統消息] 已經在測速了")
@@ -137,13 +142,16 @@ while 1:
             speedtestfun()
         # temp=str(input()).lower()
         elif temp.split(' ')[0]=="rename":
-            if config_list['AutoChangeNameSetting']['Enable']==False:print("")
+            if config_list['AutoChangeNameSetting']['Enable']==False:print("[系統消息] 由於您關閉自動更新，需要手動到Discord Develop網站更新")
+            else:print(temp.split(' ')[1])
         elif temp == "help" or temp == "?":
             print("---\n指令幫助:\nreload: 重新讀取設定檔案\nstop:關閉程式\nspeed:顯示網速\nhelp:取得幫助\nv0.2(Beta)\n---")
         else:
-            print('系統消息] 未知的指令.請輸入help或?來取得幫助')
+            print('[系統消息] 未知的指令.請輸入help或?來取得幫助')
     except Exception as e:
-       print(e)
+       if config_list['debug']==True:print(e)
+    except SystemExit:
+        exit()
 
 
 
