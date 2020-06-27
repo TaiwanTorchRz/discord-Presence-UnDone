@@ -1,6 +1,6 @@
 from pypresence import Presence
 # from selenium import webdriver
-import time,os,yaml,threading
+import time,os,yaml,threading,warnings
 # import psutil
 import speedtest
 from selenium import webdriver
@@ -13,8 +13,10 @@ global RPC,config_list,command,large_image,large_text,small_text,details,state,u
 global PING,DOWNLOAD,UPLOAD
 DOWNLOAD=None
 UPDATE = True
+SPEED=False
 def speedtestfun():
-    global PING,DOWNLOAD,UPLOAD
+    global PING,DOWNLOAD,UPLOAD,SPEED
+    SPEED=True
     print('[系統消息] 正在測試網路速度...')
     s = speedtest.Speedtest()
     print('[系統消息] 正在尋找最佳測速伺服器...')
@@ -31,6 +33,8 @@ def speedtestfun():
         print("[偵錯訊息]\n "+str(results_dict))    
     print('PING: '+str(results_dict['ping'])+"ms\n下載速度: "+str(int(results_dict['download']/1000000))+" Mbps\n上傳速度: "+str(int(results_dict['upload']/1000000))+" Mbps")
     print('[系統消息] 測試完畢')
+    SPEED=False
+    if config_list['debug']==True:print(SPEED)
 _speedtest = threading.Thread(target=speedtestfun)
 _speedtest.setName('Thread-speedtest')
 def reload():
@@ -86,6 +90,7 @@ reload()
 
 def update():
     global RPC,config_list,UPDATE,update_timer
+    warnings.simplefilter('ignore', RuntimeWarning)
     while UPDATE:
         # print('狀態更stop新')
         time.sleep(update_timer)
@@ -101,6 +106,7 @@ def update():
             if config_list['debug']==True:
                 print("[偵錯訊息] 更新遇到錯誤") 
                 print("[偵錯訊息] UPDATE="+str(UPDATE)+" update_timer="+str(update_timer))
+            
     UPDATE=False
     return
         
@@ -135,17 +141,17 @@ while 1:
             _update.join()     
             # print('正在回收資源..請稍後')
             # quit(0) 
-            while _update.is_alive or UPDATE:
+            while UPDATE:
                 print('[系統消息] 等待結束更新線程')
                 time.sleep(1)
-            while _speedtest.is_alive:
+            while SPEED:
                 print('[系統消息] 等待結束測速線程')
                 time.sleep(1)
             
             exit()
             # raise SystemExit
         elif temp=="speed":
-            if _speedtest.is_alive:
+            if SPEED:
                 print("[系統警告] 已經在測速了")
                 continue
             speedtestfun()
