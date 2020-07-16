@@ -1,0 +1,54 @@
+#詳細教學在github
+#See more details at github
+
+version: 0.2 #Ddon't touch 勿動
+debug: True
+client_id: 720534269927096370
+
+#You need to upload your image(s) here 你必須上傳你的相片到這裡
+#https://discordapp.com/developers/applications/<client_id>/rich-presence/assets
+
+update_timer: 5
+
+large_image: 
+  text: 'img_20190609_140144'
+  Enable: True
+
+large_text: 
+  text: '是楊宸家的破貓' #滑鼠游標移動上去時的顯示
+  Enable: True
+
+small_image: 
+  text: 'laptop'
+  Enable: True
+
+small_text: 
+  text: '0' #滑鼠游標移動上去時的顯示 Mouse image when hover
+  Enable: False
+
+state: 
+  text: '狐狸尾巴'
+  Enable: True
+
+details: 
+  text: '正在抓天龍...'
+  Enable: True
+
+#####進階用法#####
+#####Advancment#####
+#還沒實裝
+start:
+  int: 0
+  Enable: True
+
+end: 
+  int: 1
+  Enable: True
+
+name: <大標題是DC應用程式名稱> 
+
+
+AutoChangeNameSetting:
+  Enable: True #如果啟用會先測試網路速度
+  Discordaccount:
+  Discordpassword:
