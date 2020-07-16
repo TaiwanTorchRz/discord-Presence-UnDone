@@ -2,49 +2,49 @@ from pypresence import Presence
 # from selenium import webdriver
 import time,os,yaml,threading,warnings,sys
 # import psutil
-import speedtest
+# import speedtest
 # from selenium import webdriver
 ##################################################################################
 # cpu_per = round(psutil.cpu_percent(),1) # Get CPU Usage
 # mem = psutil.virtual_memory()
 # mem_per = round(psutil.virtual_memory().percent,1)
 ##################################################################################
-defauld_config = {'debug': True, 'client_id': '\'<client_id>\'', 'update_timer': 5, 'large_image': {'text': '\'test\'', 'Enable': True}, 'large_text': {'text': '\'test\'', 'Enable': True}, 'small_image': {'text': '\'test\'', 'Enable': True}, 'small_text': {'text': '\'test\'', 'Enable': False}, 'state': {'text': '\'test\'', 'Enable': True}, 'details': {'text': '\'test\'', 'Enable': True}, 'name': '<大標題是DC應用程式名稱>'}
+defauld_config = {'debug': True, 'client_id': '<client_id>', 'update_timer': 5, 'large_image': {'text': 'test', 'Enable': True}, 'large_text': {'text': 'test', 'Enable': True}, 'small_image': {'text': 'test', 'Enable': True}, 'small_text': {'text': 'test', 'Enable': False}, 'state': {'text': 'test', 'Enable': True}, 'details': {'text': 'test', 'Enable': True}, 'name': '<大標題是DC應用程式名稱>'}
 global RPC,config_list,command,large_image,large_text,small_text,details,state,update_timer,config_list
 global PING,DOWNLOAD,UPLOAD
 DOWNLOAD=None
 UPDATE = True
 SPEED=False
-def speedtestfun():
+# def speedtestfun():
 
-    global PING,DOWNLOAD,UPLOAD,SPEED
-    while SPEED!=-1:
-        time.sleep(1)
-        if SPEED:
-            print('[系統消息] 正在測試網路速度...')
-            s = speedtest.Speedtest()
-            print('[系統消息] 正在尋找最佳測速伺服器...')
-            s.get_best_server()
-            print('[系統消息] 正在測試下載速度...')
-            s.download()
-            print('[系統消息] 正在測試上傳速度...')
-            s.upload()
-            results_dict = s.results.dict()
-            PING=int(results_dict['ping'])
-            DOWNLOAD=int(results_dict['download']/1000000)
-            UPLOAD=int(results_dict['upload']/1000000)
-            if config_list['debug']==True:
-                print("[偵錯訊息]\n "+str(results_dict))    
-            print('PING: '+str(results_dict['ping'])+"ms\n下載速度: "+str(int(results_dict['download']/1000000))+" Mbps\n上傳速度: "+str(int(results_dict['upload']/1000000))+" Mbps")
-            print('[系統消息] 測試完畢')
-            if SPEED>=0:
-                SPEED=False
-            if config_list['debug']==True:print(SPEED)
-    SPEED=-2
+#     global PING,DOWNLOAD,UPLOAD,SPEED
+#     while SPEED!=-1:
+#         time.sleep(1)
+#         if SPEED:
+#             print('[系統消息] 正在測試網路速度...')
+#             s = speedtest.Speedtest()
+#             print('[系統消息] 正在尋找最佳測速伺服器...')
+#             s.get_best_server()
+#             print('[系統消息] 正在測試下載速度...')
+#             s.download()
+#             print('[系統消息] 正在測試上傳速度...')
+#             s.upload()
+#             results_dict = s.results.dict()
+#             PING=int(results_dict['ping'])
+#             DOWNLOAD=int(results_dict['download']/1000000)
+#             UPLOAD=int(results_dict['upload']/1000000)
+#             if config_list['debug']==True:
+#                 print("[偵錯訊息]\n "+str(results_dict))    
+#             print('PING: '+str(results_dict['ping'])+"ms\n下載速度: "+str(int(results_dict['download']/1000000))+" Mbps\n上傳速度: "+str(int(results_dict['upload']/1000000))+" Mbps")
+#             print('[系統消息] 測試完畢')
+#             if SPEED>=0:
+#                 SPEED=False
+#             if config_list['debug']==True:print(SPEED)
+#     # SPEED=-2
 
-_speedtest = threading.Thread(target=speedtestfun)
-_speedtest.setName('Thread-speedtest')
-_speedtest.start()
+# _speedtest = threading.Thread(target=speedtestfun)
+# _speedtest.setName('Thread-speedtest')
+# _speedtest.start()
 def reload():
     global RPC,config_list,command,large_image,large_text,small_text,details,state,UPDATE,update_timer,SPEED,defauld_config
     UPDATE = True
@@ -53,10 +53,13 @@ def reload():
         with open('.\setting\config.yml',encoding="utf-8",mode="r") as file:
             config_list = yaml.full_load(file)
             print('[系統消息] 成功讀取設定檔案，client_id= '+str(config_list['client_id']))
-            if config_list['debug']==True: print('[偵錯訊息] \r'+str(config_list))
+            if config_list['debug']==True: print('[偵錯訊息] \n'+str(config_list))
     except:
-        pass
         print('[系統警告] 找不到設定檔案，正在建立')
+        try:
+            os.mkdir('setting')
+        except:
+            pass
         with open('.\setting\config.yml', 'w',) as f:
             yaml.dump(defauld_config, f, default_flow_style=False)
         reload()
@@ -163,7 +166,7 @@ while 1:
         # temp=str(input()).lower()
         elif temp =="stop":
             UPDATE=False
-            SPEED=-1
+            # SPEED=-1
             print('[系統消息] 正在等待所有線程結束..請稍後')
             RPC.clear()
             RPC.close()
@@ -173,27 +176,28 @@ while 1:
             while UPDATE!=-1:
                 print('[系統消息] 等待結束更新線程')
                 time.sleep(1)
-            while SPEED!=-2:
-                print('[系統消息] 等待結束測速線程')
-                time.sleep(1)
+            # while SPEED!=-2:
+            #     print('[系統消息] 等待結束測速線程')
+            #     time.sleep(1)
             sys.exit()
             # raise SystemExit
-        elif temp=="speed":
-            if SPEED:
-                print("[系統警告] 已經在測速了")
-                break
-            SPEED = True
-            speedtestfun()
+        # elif temp=="speed":
+        #     if SPEED:
+        #         print("[系統警告] 已經在測速了")
+        #         break
+        #     SPEED = True
+        #     speedtestfun()
         # temp=str(input()).lower()
         elif temp.split(' ')[0]=="rename":
             if config_list['AutoChangeNameSetting']['Enable']==False:print("[系統消息] 由於您關閉自動更新，需要手動到Discord Develop網站更新")
             else:print(temp.split(' ')[1])
         elif temp == "help" or temp == "?":
-            print("---\n指令幫助:\nreload: 重新讀取設定檔案\nstop:關閉程式\nspeed:顯示網速\nhelp:取得幫助\nv0.2(Beta)\n---")
+            print("---\n指令幫助:\nreload: 重新讀取設定檔案\nstop:關閉程式\nhelp:取得幫助\nv0.2(Beta)\n---")
         else:
             print('[系統消息] 未知的指令.請輸入help或?來取得幫助')
     except SystemExit:
         break
     except Exception as e:
        if config_list['debug']==True:print(e)
+
     
