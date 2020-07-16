@@ -18,7 +18,7 @@ SPEED=False
 def speedtestfun():
 
     global PING,DOWNLOAD,UPLOAD,SPEED
-    while 1:
+    while SPEED!=-1:
         time.sleep(1)
         if SPEED:
             print('[系統消息] 正在測試網路速度...')
@@ -37,8 +37,10 @@ def speedtestfun():
                 print("[偵錯訊息]\n "+str(results_dict))    
             print('PING: '+str(results_dict['ping'])+"ms\n下載速度: "+str(int(results_dict['download']/1000000))+" Mbps\n上傳速度: "+str(int(results_dict['upload']/1000000))+" Mbps")
             print('[系統消息] 測試完畢')
-            SPEED=False
+            if SPEED>=0:
+                SPEED=False
             if config_list['debug']==True:print(SPEED)
+    SPEED=-2
 
 _speedtest = threading.Thread(target=speedtestfun)
 _speedtest.setName('Thread-speedtest')
@@ -104,10 +106,10 @@ def reload():
         print('[系統消息] 與Discord伺服器連線中...')
         RPC.connect()
         print('[系統消息] 連線成功')
-        if config_list['AutoChangeNameSetting']['Enable']:
-            if DOWNLOAD == None:
-                print('[系統消息] 啟用自動更改(DC應用程式)名稱，先進行網路測速')
-                SPEED = True
+        # if config_list['AutoChangeNameSetting']['Enable']:
+        #     if DOWNLOAD == None:
+        #         print('[系統消息] 啟用自動更改(DC應用程式)名稱，先進行網路測速')
+        #         SPEED = True
         # print('已就緒，請輸入help或?來取得幫助')
         print('\n[系統消息] 初始化完畢')
     except Exception as e:
@@ -133,8 +135,8 @@ def update():
                 if UPDATE == True :print("[偵錯訊息] 更新遇到錯誤") 
                 print("[偵錯訊息] UPDATE="+str(UPDATE)+" update_timer="+str(update_timer))
             
-    UPDATE=False
-    return
+    UPDATE=-1
+    return None
         
 _update = threading.Thread(target = update)
 _update.setName('Thread-Update')
@@ -161,16 +163,17 @@ while 1:
         # temp=str(input()).lower()
         elif temp =="stop":
             UPDATE=False
+            SPEED=-1
             print('[系統消息] 正在等待所有線程結束..請稍後')
             RPC.clear()
             RPC.close()
             _update.join()     
             # print('正在回收資源..請稍後')
             # quit(0) 
-            while UPDATE:
+            while UPDATE!=-1:
                 print('[系統消息] 等待結束更新線程')
                 time.sleep(1)
-            while SPEED:
+            while SPEED!=-2:
                 print('[系統消息] 等待結束測速線程')
                 time.sleep(1)
             sys.exit()
@@ -190,11 +193,7 @@ while 1:
         else:
             print('[系統消息] 未知的指令.請輸入help或?來取得幫助')
     except SystemExit:
-        sys.exit()
+        break
     except Exception as e:
        if config_list['debug']==True:print(e)
     
-
-
-
-
